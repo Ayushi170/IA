@@ -1,0 +1,113 @@
+import java.util.ArrayList;
+import java.util.List;
+
+class State {
+    int missionariesLeft;
+    int cannibalsLeft;
+    int boat; // 0 if boat is on the left bank, 1 if on the right bank
+
+    public State(int missionariesLeft, int cannibalsLeft, int boat) {
+        this.missionariesLeft = missionariesLeft;
+        this.cannibalsLeft = cannibalsLeft;
+        this.boat = boat;
+    }
+
+    public boolean isValid() {
+        if (missionariesLeft < 0 || cannibalsLeft < 0 || missionariesLeft > 3 || cannibalsLeft > 3) {
+            return false;
+        }
+
+        // Check if missionaries are outnumbered by cannibals on either side
+        if ((cannibalsLeft > missionariesLeft && missionariesLeft > 0) ||
+            (3 - cannibalsLeft > 3 - missionariesLeft && 3 - missionariesLeft > 0)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isGoal() {
+        return missionariesLeft == 0 && cannibalsLeft == 0 && boat == 1;
+    }
+
+    public State move(int missionaries, int cannibals) {
+        if (boat == 0) {
+            return new State(missionariesLeft - missionaries, cannibalsLeft - cannibals, 1);
+        } else {
+            return new State(missionariesLeft + missionaries, cannibalsLeft + cannibals, 0);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        State state = (State) obj;
+        return missionariesLeft == state.missionariesLeft &&
+                cannibalsLeft == state.cannibalsLeft &&
+                boat == state.boat;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * missionariesLeft + 31 * cannibalsLeft + boat;
+    }
+}
+
+public class MissionariesCannibals {
+
+    public static void main(String[] args) {
+        State initialState = new State(3, 3, 0);
+        List<State> solution = solve(initialState);
+        printSolution(solution);
+    }
+
+    public static List<State> solve(State initialState) {
+        List<State> path = new ArrayList<>();
+        if (dfs(initialState, path)) {
+            return path;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean dfs(State state, List<State> path) {
+        if (!state.isValid()) {
+            return false;
+        }
+
+        path.add(state);
+
+        if (state.isGoal()) {
+            return true;
+        }
+
+        for (int missionaries = 0; missionaries <= 2; missionaries++) {
+            for (int cannibals = 0; cannibals <= 2; cannibals++) {
+                if (missionaries + cannibals <= 2 && missionaries + cannibals >= 1) {
+                    int direction = (state.boat == 0) ? -1 : 1;
+                    State nextState = state.move(missionaries * direction, cannibals * direction);
+
+                    if (!path.contains(nextState) && dfs(nextState, path)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        path.remove(path.size() - 1);
+        return false;
+    }
+
+    private static void printSolution(List<State> solution) {
+        if (solution != null) {
+            for (State state : solution) {
+                System.out.println("Missionaries left: " + state.missionariesLeft +
+                        ", Cannibals left: " + state.cannibalsLeft +
+                        ", Boat: " + ((state.boat == 0) ? "Left" : "Right"));
+            }
+        } else {
+            System.out.println("No solution found.");
+        }
+    }
+}

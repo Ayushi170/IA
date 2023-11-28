@@ -1,0 +1,22 @@
+% Facts for Family Relations
+parent(john, bob).
+parent(john, alice).
+parent(bob, charlie).
+parent(alice, david).
+
+% Rules for Ancestor Relationship
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+
+% Facts for Likes
+likes(john, pizza).
+likes(alice, pizza).
+likes(bob, sushi).
+likes(charlie, sushi).
+
+% Rules for Friendship
+friends(X, Y) :- likes(X, Z), likes(Y, Z), X \= Y.
+
+
+//ancestor(john, charlie).
+ancestor(david, bob).

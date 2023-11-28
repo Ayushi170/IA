@@ -1,0 +1,82 @@
+import java.util.*;
+
+class Graph {
+    private int vertices;
+    private LinkedList<Integer>[] adjacencyList;
+
+    Graph(int vertices) {
+        this.vertices = vertices;
+        adjacencyList = new LinkedList[vertices];
+        for (int i = 0; i < vertices; i++) {
+            adjacencyList[i] = new LinkedList<>();
+        }
+    }
+
+    void addEdge(int source, int destination) {
+        adjacencyList[source].add(destination);
+    }
+
+    void bestFirstSearch(int startVertex, int goalVertex) {
+        boolean[] visited = new boolean[vertices];
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparingInt(o -> heuristic(o, goalVertex)));
+
+        visited[startVertex] = true;
+        priorityQueue.add(startVertex);
+
+        while (!priorityQueue.isEmpty()) {
+            int currentVertex = priorityQueue.poll();
+
+            System.out.print(currentVertex + " ");
+
+            if (currentVertex == goalVertex) {
+                System.out.println("\nGoal node reached.");
+                return;
+            }
+
+            for (int neighbor : adjacencyList[currentVertex]) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    priorityQueue.add(neighbor);
+                }
+            }
+        }
+
+        System.out.println("\nGoal node not reachable.");
+    }
+
+    // Heuristic function (simple distance)
+    private int heuristic(int currentVertex, int goalVertex) {
+        return Math.abs(currentVertex - goalVertex);
+    }
+}
+
+public class BestFirstSearch {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the number of vertices: ");
+        int vertices = scanner.nextInt();
+
+        Graph graph = new Graph(vertices);
+
+        System.out.print("Enter the number of edges: ");
+        int edges = scanner.nextInt();
+
+        for (int i = 0; i < edges; i++) {
+            System.out.println("Enter edge " + (i + 1) + " source and destination:");
+            int source = scanner.nextInt();
+            int destination = scanner.nextInt();
+            graph.addEdge(source, destination);
+        }
+
+        System.out.print("Enter the start vertex: ");
+        int startVertex = scanner.nextInt();
+
+        System.out.print("Enter the goal vertex: ");
+        int goalVertex = scanner.nextInt();
+
+        System.out.println("Best First Search traversal:");
+        graph.bestFirstSearch(startVertex, goalVertex);
+    }
+}
+

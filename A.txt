@@ -1,0 +1,122 @@
+import java.util.*;
+
+class Graph {
+    private int vertices;
+    private LinkedList<Edge>[] adjacencyList;
+
+    Graph(int vertices) {
+        this.vertices = vertices;
+        adjacencyList = new LinkedList[vertices];
+        for (int i = 0; i < vertices; i++) {
+            adjacencyList[i] = new LinkedList<>();
+        }
+    }
+
+    void addEdge(int source, int destination, int weight) {
+        adjacencyList[source].add(new Edge(destination, weight));
+    }
+
+    List<Edge> getNeighbors(int vertex) {
+        return adjacencyList[vertex];
+    }
+}
+
+class Edge {
+    int destination;
+    int weight;
+
+    Edge(int destination, int weight) {
+        this.destination = destination;
+        this.weight = weight;
+    }
+}
+
+class Node {
+    int vertex;
+    int gScore;
+    int fScore;
+
+    Node(int vertex, int gScore, int fScore) {
+        this.vertex = vertex;
+        this.gScore = gScore;
+        this.fScore = fScore;
+    }
+}
+
+public class AStarSearch {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the number of vertices: ");
+        int vertices = scanner.nextInt();
+
+        Graph graph = new Graph(vertices);
+
+        System.out.print("Enter the number of edges: ");
+        int edges = scanner.nextInt();
+
+        for (int i = 0; i < edges; i++) {
+            System.out.println("Enter edge " + (i + 1) + " source, destination, and weight:");
+            int source = scanner.nextInt();
+            int destination = scanner.nextInt();
+            int weight = scanner.nextInt();
+            graph.addEdge(source, destination, weight);
+        }
+
+        System.out.print("Enter the start vertex: ");
+        int startVertex = scanner.nextInt();
+
+        System.out.print("Enter the goal vertex: ");
+        int goalVertex = scanner.nextInt();
+
+        aStarSearch(graph, startVertex, goalVertex);
+    }
+
+    private static void aStarSearch(Graph graph, int startVertex, int goalVertex) {
+        PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingInt(node -> node.fScore));
+        openSet.add(new Node(startVertex, 0, heuristic(startVertex, goalVertex)));
+
+        Map<Integer, Integer> cameFrom = new HashMap<>();
+        Map<Integer, Integer> gScore = new HashMap<>();
+        gScore.put(startVertex, 0);
+
+        while (!openSet.isEmpty()) {
+            Node current = openSet.poll();
+            int currentVertex = current.vertex;
+
+            if (currentVertex == goalVertex) {
+                reconstructPath(cameFrom, goalVertex);
+                return;
+            }
+
+            for (Edge neighbor : graph.getNeighbors(currentVertex)) {
+                int tentativeGScore = gScore.getOrDefault(currentVertex, Integer.MAX_VALUE) + neighbor.weight;
+                if (tentativeGScore < gScore.getOrDefault(neighbor.destination, Integer.MAX_VALUE)) {
+                    cameFrom.put(neighbor.destination, currentVertex);
+                    gScore.put(neighbor.destination, tentativeGScore);
+                    int fScore = tentativeGScore + heuristic(neighbor.destination, goalVertex);
+                    openSet.add(new Node(neighbor.destination, tentativeGScore, fScore));
+                }
+            }
+        }
+
+        System.out.println("Goal not reachable.");
+    }
+
+    private static int heuristic(int vertex, int goalVertex) {
+        // Implement your heuristic function here
+        return Math.abs(vertex - goalVertex); // Example heuristic
+    }
+
+    private static void reconstructPath(Map<Integer, Integer> cameFrom, int current) {
+        List<Integer> path = new ArrayList<>();
+        path.add(current);
+        while (cameFrom.containsKey(current)) {
+            current = cameFrom.get(current);
+            path.add(current);
+        }
+        Collections.reverse(path);
+        System.out.println("A* Path: " + path);
+    }
+}
+

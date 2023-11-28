@@ -1,0 +1,327 @@
+import java.util.Scanner;
+
+public class TicTacToe1 {
+    // X : 2  (the corresponding position on the game board will be marked with the value )
+    // O : 3
+    // B : 5 (Blank)
+
+    public static void display(int[][] arr) {
+        System.out.println("---------"); 
+        for (int i = 0; i < 3; i++) { // iterates three times to show number of rows ie. 3
+            System.out.print("| ");
+            for (int j = 0; j < 3; j++) { // representing 3 columns
+                if (arr[i][j] == 5) {  // if value=5 prints _ ie blank space 
+                    System.out.print("_ ");
+                } else if (arr[i][j] == 2) {
+                    System.out.print("X ");
+                } else if (arr[i][j] == 3) {
+                    System.out.print("O ");
+                }
+            }
+            System.out.println("|");
+        }
+        System.out.println("---------\n");
+    }
+
+    public static int posswinX(int[][] arr) { // possibility of X win
+        for (int i = 0; i < 3; i++) {
+            int pos_row = -1; // position in current row
+            int pos_col = -1;
+            int mul_row = 1; // product of value in current row
+            int mul_col = 1;
+            for (int j = 0; j < 3; j++) {
+                mul_row *= arr[i][j]; // multiplies mul_row with value at current position 
+                mul_col *= arr[j][i];
+                if (arr[i][j] == 5) 
+                    pos_row = (i * 3) + j; // get linear index
+                if (arr[j][i] == 5)
+                    pos_col = (j * 3) + i;
+            }
+            if (mul_row == 8) {
+                // Possibility of Winning X By Rows;
+                return pos_row;
+            } else if (mul_col == 8) {
+                // Possibility of Winning X By Column;
+                return pos_col;
+            }
+        }
+        // Now check Diagonals:
+        int mul_dia1 = 1;
+        int mul_dia2 = 1;
+        int pos_col1 = -1; // store linear position of blank spaces
+        int pos_col2 = -1;
+
+        for (int i = 0, j = 0; i < 3; i++, j++) {
+            mul_dia1 *= arr[i][j];
+            mul_dia2 *= arr[i][2 - j];
+            if (arr[i][j] == 5)
+                pos_col1 = (i * 3) + j;
+            if (arr[i][2 - j] == 5)
+                pos_col2 = (i * 3) + (2 - j);
+        }
+        if (mul_dia1 == 8) {
+            return pos_col1;
+        } else if (mul_dia2 == 8) {
+            return pos_col2;
+        }
+        return -1;
+    }
+
+    public static int posswinO(int[][] arr) {
+        for (int i = 0; i < 3; i++) {
+            int pos_row = -1;
+            int pos_col = -1;
+            int mul_row = 1;
+            int mul_col = 1;
+            for (int j = 0; j < 3; j++) {
+                mul_row *= arr[i][j];
+                mul_col *= arr[j][i];
+                if (arr[i][j] == 5)
+                    pos_row = (i * 3) + j;
+                if (arr[j][i] == 5)
+                    pos_col = (j * 3) + i;
+            }
+            if (mul_row == 27) {
+                // Possibility of Winning of O By Rows;
+                return pos_row;
+            } else if (mul_col == 27) {
+                // Possibility of Winning of O Column;
+                return pos_col;
+            }
+        }
+        // Now check Diagonals:
+        int mul_dia1 = 1;
+        int mul_dia2 = 1;
+        int pos_col1 = -1;
+        int pos_col2 = -1;
+
+        for (int i = 0, j = 0; i < 3; i++, j++) {
+            mul_dia1 *= arr[i][j];
+            mul_dia2 *= arr[i][2 - j];
+            if (arr[i][j] == 5)
+                pos_col1 = (i * 3) + j;
+            if (arr[i][2 - j] == 5)
+                pos_col2 = (i * 3) + (2 - j);
+        }
+        if (mul_dia2 == 27) {
+            return pos_col2;
+        } else if (mul_dia1 == 27) {
+            return pos_col1;
+        }
+        return -1;
+    }
+
+    public static boolean win(int[][] arr) {
+        for (int i = 0; i < 3; i++) {
+            int mul_row = 1;
+            int mul_col = 1;
+            for (int j = 0; j < 3; j++) {
+                mul_row *= arr[i][j];
+                mul_col *= arr[j][i];
+            }
+            if (mul_row == 8) {
+                // Possibility of Winning X By Rows;
+                return true;
+            } else if (mul_row == 27) {
+                // Possibility of Winning of O By Rows;
+                return true;
+            } else if (mul_col == 8) {
+                // Possibility of Winning X By Column;
+                return true;
+            } else if (mul_col == 27) {
+                // Possibility of Winning of O Column;
+                return true;
+            }
+    
+            // Now check Diagonals:
+            int mul_dia1 = 1;
+            int mul_dia2 = 1;
+    
+            for (int k = 0, j = 0; k < 3; k++, j++) {
+                mul_dia1 *= arr[k][j];
+                mul_dia2 *= arr[k][2 - j];
+            }
+            if (mul_dia1 == 8) {
+                return true;
+            } else if (mul_dia2 == 27) {
+                return true;
+            }
+            if (mul_dia2 == 8) {
+                return true;
+            }
+            if (mul_dia1 == 27) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static int whereToPlay(int[][] arr) {
+        Scanner scanner = new Scanner(System.in); // read input from user
+        int ans;
+        System.out.println("| 0 1 2 |\n| 3 4 5 |\n| 6 7 8 |\n");
+        System.out.print("Where do you want to play? (0-8): ");
+        ans = scanner.nextInt(); // value stored in ans read using scanner.nextInt
+
+        int row = ans / 3; // row and column indices 
+        int col = ans % 3;
+
+        // Check if the chosen cell is already occupied
+        while (arr[row][col] != 5) { // not empty
+            System.out.println("Invalid move. Please choose an empty cell.");
+            System.out.print("Where do you want to play? (0-8): ");
+            ans = scanner.nextInt();
+            row = ans / 3;
+            col = ans % 3;
+        }
+
+        return ans;
+    }
+
+    public static int check(int[][] arr) {
+        // CENTER
+        if (arr[1][1] == 5) {
+            return 4;
+        }
+
+        // CORNER
+        if (arr[0][0] == 5) {
+            return 0;
+        }
+        if (arr[0][2] == 5) {
+            return 2;
+        }
+        if (arr[2][0] == 5) {
+            return 6;
+        }
+        if (arr[2][2] == 5) {
+            return 8;
+        }
+
+        // NON-CORNER
+        if (arr[0][1] == 5) {
+            return 1;
+        }
+        if (arr[1][0] == 5) {
+            return 3;
+        }
+        if (arr[1][2] == 5) {
+            return 5;
+        }
+        if (arr[2][1] == 5) {
+            return 7;
+        }
+
+        return -1; // no suitable positions available 
+    }
+
+    public static void main(String[] args) {
+        int[][] arr = {{5, 5, 5}, {5, 5, 5}, {5, 5, 5}};
+        System.out.println("Tic Tac Toe");
+
+        Scanner scanner = new Scanner(System.in);
+        char first;
+        int ans;
+        System.out.print("Do you want to play with X or O? ");
+        first = scanner.next().charAt(0);
+
+        if (first == 'X') {
+            int moves = 0; // counter variable to keep track of no. of moves
+            while (true) {
+                ans = whereToPlay(arr);
+                int row = ans / 3;
+                int col = ans % 3;
+                arr[row][col] = 2; // AI's move
+
+                display(arr); // update
+                moves++;
+
+                if (win(arr)) { // win method called passing arr as argument
+                    System.out.println("YOU WIN!");
+                    System.exit(0);
+                }
+
+                if (moves == 9) {
+                    System.out.println("DRAW!");
+                    System.exit(0);
+                }
+
+                ans = posswinO(arr);
+                if (ans != -1) {
+                    int rowO = ans / 3;
+                    int colO = ans % 3;
+                    arr[rowO][colO] = 3;
+                } else {
+                    ans = posswinX(arr);
+                    if (ans != -1) {
+                        int rowX = ans / 3;
+                        int colX = ans % 3;
+                        arr[rowX][colX] = 3;
+                    } else {
+                        int mark = check(arr);
+                        int row1 = mark / 3;
+                        int col1 = mark % 3;
+                        arr[row1][col1] = 3;
+                    }
+                }
+
+                display(arr);
+                moves++;
+
+                if (win(arr)) { // checks if ai is won
+                    System.out.println("YOU LOSE!");
+                    System.exit(0);
+                }
+            }
+        } else if (first == 'O') { // reversed if user chooses O
+            int moves = 0;
+            while (true) {
+                ans = posswinX(arr);
+                if (ans != -1) {
+                    int row = ans / 3;
+                    int col = ans % 3;
+                    arr[row][col] = 2;
+                } else {
+                    ans = posswinO(arr);
+                    if (ans != -1) {
+                        int row = ans / 3;
+                        int col = ans % 3;
+                        arr[row][col] = 2;
+                    } else {
+                        int mark = check(arr);
+                        int row = mark / 3;
+                        int col = mark % 3;
+                        arr[row][col] = 2;
+                    }
+                }
+
+                display(arr);
+                moves++;
+
+                if (win(arr)) {
+                    System.out.println("YOU LOSE!");
+                    System.exit(0);
+                }
+
+                if (moves == 9) {
+                    System.out.println("DRAW!");
+                    System.exit(0);
+                }
+
+                ans = whereToPlay(arr);
+                int row = ans / 3;
+                int col = ans % 3;
+                arr[row][col] = 3;
+
+                display(arr);
+                moves++;
+
+                if (win(arr)) {
+                    System.out.println("YOU WIN!");
+                    System.exit(0);
+                }
+            }
+        }
+    }
+}
+

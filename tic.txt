@@ -1,0 +1,218 @@
+import java.util.Scanner;
+
+public class TicTacToe2 {
+    final static int BOARD_SIZE = 3;
+    final static char HUMAN_PLAYER = 'X';
+    final static char AI_PLAYER = 'O';
+
+    static char[][] board = new char[BOARD_SIZE][BOARD_SIZE];
+
+    // Function to initialize the board with empty cells
+    static void initializeBoard() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                board[i][j] = ' ';
+            }
+        }
+    }
+
+    // Function to print the board
+    static void printBoard() {
+        System.out.println("-------------\n| 1 | 2 | 3 |\n-------------\n| 4 | 5 | 6 |\n-------------\n| 7 | 8 | 9 |\n-------------\n");
+        System.out.println("-------------");
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            System.out.print("| ");
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                System.out.print(board[i][j] + " | ");
+            }
+            System.out.println();
+            System.out.println("-------------");
+        }
+    }
+
+    // Function to check if a player has won
+    static boolean checkWin(char player) {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
+                return true; // Check rows
+            }
+            if (board[0][i] == player && board[1][i] == player && board[2][i] == player) {
+                return true; // Check columns
+            }
+        }
+        if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
+            return true; // Check diagonal
+        }
+        if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
+            return true; // Check anti-diagonal
+        }
+        return false;
+    }
+
+    // Function to check if the board is full (draw)
+    static boolean isDraw() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] == ' ') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // Function to evaluate the Euclidean distance heuristic
+    static int evaluateEuclideanDistance() {
+        int aiScore = 0;
+        int center = BOARD_SIZE / 2;
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] == AI_PLAYER) {
+                    aiScore += Math.sqrt((center - i) * (center - i) + (center - j) * (center - j));
+                }
+            }
+        }
+
+        return aiScore;
+    }
+
+    // Minimax algorithm with alpha-beta pruning
+    static int minimax(char player, int depth, int alpha, int beta) {
+        if (checkWin(HUMAN_PLAYER)) {
+            return -10 + depth;
+        } else if (checkWin(AI_PLAYER)) {
+            return 10 - depth;
+        } else if (isDraw()) {
+            return 0;
+        }
+
+        if (player == AI_PLAYER) {
+            int maxEval = Integer.MIN_VALUE;
+            for (int i = 0; i < BOARD_SIZE; i++) {
+                for (int j = 0; j < BOARD_SIZE; j++) {
+                    if (board[i][j] == ' ') {
+                        board[i][j] = AI_PLAYER;
+                        int eval = minimax(HUMAN_PLAYER, depth + 1, alpha, beta);
+                        board[i][j] = ' ';
+                        maxEval = Math.max(maxEval, eval);
+                        alpha = Math.max(alpha, eval);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return maxEval;
+        } else {
+            int minEval = Integer.MAX_VALUE;
+            for (int i = 0; i < BOARD_SIZE; i++) {
+                for (int j = 0; j < BOARD_SIZE; j++) {
+                    if (board[i][j] == ' ') {
+                        board[i][j] = HUMAN_PLAYER;
+                        int eval = minimax(AI_PLAYER, depth + 1, alpha, beta);
+                        board[i][j] = ' ';
+                        minEval = Math.min(minEval, eval);
+                        beta = Math.min(beta, eval);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return minEval;
+        }
+    }
+
+    // Function to find the best move for the AI player using Euclidean distance and Minimax
+    static int[] findBestMove() {
+        int bestScore = Integer.MIN_VALUE;
+        int[] bestMove = new int[]{-1, -1};
+
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board[i][j] == ' ') {
+                    board[i][j] = AI_PLAYER;
+                    int score = minimax(HUMAN_PLAYER, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    board[i][j] = ' ';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove[0] = i;
+                        bestMove[1] = j;
+                    }
+                }
+            }
+        }
+
+        return bestMove;
+    }
+
+    // Function to make the AI player's move
+    static void makeAIMove() {
+        int[] bestMove = findBestMove();
+        int row = bestMove[0];
+        int col = bestMove[1];
+        board[row][col] = AI_PLAYER;
+        System.out.println("AI player's move:");
+        printBoard();
+    }
+
+    // Function to make the human player's move
+    static void makeHumanMove(int position) {
+        int row = (position - 1) / BOARD_SIZE;
+        int col = (position - 1) % BOARD_SIZE;
+        
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE || board[row][col] != ' ') {
+            System.out.println("Invalid move. Try again.");
+        } else {
+            board[row][col] = HUMAN_PLAYER;
+            System.out.println("Your move:");
+            printBoard();
+        }
+    }
+
+    // Main game loop
+    static void playGame() {
+        Scanner scanner = new Scanner(System.in);
+        initializeBoard();
+        printBoard();
+        
+        // Game loop
+        while (true) {
+            // Human player's turn
+            
+            System.out.print("Enter position (1-9): ");
+            int position = scanner.nextInt();
+            makeHumanMove(position);
+
+            if (checkWin(HUMAN_PLAYER)) {
+                System.out.println("You win!");
+                break;
+            }
+
+            if (isDraw()) {
+                System.out.println("It's a draw!");
+                break;
+            }
+
+            // AI player's turn
+            makeAIMove();
+
+            if (checkWin(AI_PLAYER)) {
+                System.out.println("AI player wins!");
+                break;
+            }
+
+            if (isDraw()) {
+                System.out.println("It's a draw!");
+                break;
+            }
+        }
+
+        scanner.close();
+    }
+
+    public static void main(String[] args) {
+        playGame();
+    }
+}

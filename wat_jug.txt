@@ -1,0 +1,170 @@
+import java.util.*;
+
+class JugState {
+    int jugX;
+    int jugY;
+
+    public JugState(int jugX, int jugY) {
+        this.jugX = jugX;
+        this.jugY = jugY;
+    }
+
+    public boolean isValid(int jugXCapacity, int jugYCapacity) {
+        return jugX >= 0 && jugY >= 0 && jugX <= jugXCapacity && jugY <= jugYCapacity;
+    }
+
+    public boolean isGoal(int target) {
+        return jugX == target || jugY == target;
+    }
+
+    public JugState fillX(int jugXCapacity) {
+        return new JugState(jugXCapacity, jugY);
+    }
+
+    public JugState fillY(int jugYCapacity) {
+        return new JugState(jugX, jugYCapacity);
+    }
+
+    public JugState emptyX() {
+        return new JugState(0, jugY);
+    }
+
+    public JugState emptyY() {
+        return new JugState(jugX, 0);
+    }
+
+    public JugState pourXtoY(int jugYCapacity) {
+        int amount = Math.min(jugX, jugYCapacity - jugY);
+        return new JugState(jugX - amount, jugY + amount);
+    }
+
+    public JugState pourYtoX(int jugXCapacity) {
+        int amount = Math.min(jugY, jugXCapacity - jugX);
+        return new JugState(jugX + amount, jugY - amount);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        JugState jugState = (JugState) obj;
+        return jugX == jugState.jugX && jugY == jugState.jugY;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(jugX, jugY);
+    }
+}
+
+public class WaterJugBFS {
+
+    public static void main(String[] args) {
+        int jugXCapacity = 4;
+        int jugYCapacity = 3;
+        int target = 2;
+
+        List<JugState> solution = solveWaterJugBFS(jugXCapacity, jugYCapacity, target);
+        printSolution(solution);
+    }
+
+    public static List<JugState> solveWaterJugBFS(int jugXCapacity, int jugYCapacity, int target) {
+        Queue<JugState> queue = new LinkedList<>();
+        Set<JugState> visited = new HashSet<>();
+
+        JugState initialState = new JugState(0, 0);
+        queue.add(initialState);
+        visited.add(initialState);
+
+        while (!queue.isEmpty()) {
+            JugState currentState = queue.poll();
+
+            if (currentState.isGoal(target)) {
+                return reconstructSolution(currentState);
+            }
+
+            // Generate possible next states
+            List<JugState> nextStates = generateNextStates(currentState, jugXCapacity, jugYCapacity);
+
+            for (JugState nextState : nextStates) {
+                if (!visited.contains(nextState)) {
+                    queue.add(nextState);
+                    visited.add(nextState);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static List<JugState> generateNextStates(JugState currentState, int jugXCapacity, int jugYCapacity) {
+        List<JugState> nextStates = new ArrayList<>();
+
+        // Fill jug X
+        JugState fillX = currentState.fillX(jugXCapacity);
+        if (fillX.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(fillX);
+        }
+
+        // Fill jug Y
+        JugState fillY = currentState.fillY(jugYCapacity);
+        if (fillY.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(fillY);
+        }
+
+        // Empty jug X
+        JugState emptyX = currentState.emptyX();
+        if (emptyX.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(emptyX);
+        }
+
+        // Empty jug Y
+        JugState emptyY = currentState.emptyY();
+        if (emptyY.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(emptyY);
+        }
+
+        // Pour from X to Y
+        JugState pourXtoY = currentState.pourXtoY(jugYCapacity);
+        if (pourXtoY.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(pourXtoY);
+        }
+
+        // Pour from Y to X
+        JugState pourYtoX = currentState.pourYtoX(jugXCapacity);
+        if (pourYtoX.isValid(jugXCapacity, jugYCapacity)) {
+            nextStates.add(pourYtoX);
+        }
+
+        return nextStates;
+    }
+
+    private static List<JugState> reconstructSolution(JugState finalState) {
+        List<JugState> solution = new ArrayList<>();
+        JugState currentState = finalState;
+
+        while (currentState != null) {
+            solution.add(currentState);
+            currentState = getParent(currentState);
+        }
+
+        Collections.reverse(solution);
+        return solution;
+    }
+
+    private static JugState getParent(JugState state) {
+        // You might want to modify this method based on how you store parent information
+        // in the state representation.
+        return null;
+    }
+
+    private static void printSolution(List<JugState> solution) {
+        if (solution != null) {
+            for (JugState state : solution) {
+                System.out.println("Jug X: " + state.jugX + ", Jug Y: " + state.jugY);
+            }
+        } else {
+            System.out.println("No solution found.");
+        }
+    }
+}

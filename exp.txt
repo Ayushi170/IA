@@ -1,0 +1,39 @@
+% Define some facts about symptoms and diseases
+symptom(fever).
+symptom(cough).
+symptom(headache).
+symptom(sore_throat).
+
+disease(cold) :- symptom(fever), symptom(cough), symptom(sore_throat).
+disease(flu) :- symptom(fever), symptom(cough), symptom(headache).
+disease(headache) :- symptom(headache).
+disease(unknown) :- not(disease(_)).
+
+% Define a predicate to diagnose diseases based on symptoms
+diagnose(Disease) :- disease(Disease), write('Diagnosis: '), write(Disease), nl.
+diagnose(unknown) :- write('Diagnosis: Unknown'), nl.
+
+% Define a predicate to interact with the user
+ask_symptoms :-
+    write('Enter your symptoms (comma-separated): '),
+    read(Symptoms),
+    check_symptoms(Symptoms).
+
+check_symptoms(Symptoms) :-
+    diagnose(Disease),
+    nl,
+    write('Do you want to check another set of symptoms? (yes/no): '),
+    read(Answer),
+    process_answer(Answer).
+
+process_answer(yes) :- ask_symptoms.
+process_answer(no) :- write('Goodbye!'), nl.
+
+% Start the expert system
+start :-
+    write('Welcome to the Disease Diagnosis Expert System.'), nl,
+    write('Please provide your symptoms to get a diagnosis.'), nl,
+    ask_symptoms.
+
+% Entry point
+:- initialization(start).

@@ -1,0 +1,65 @@
+import java.util.*;
+
+class Graph {
+    private int V;
+    private LinkedList<Integer>[] adjList;
+
+    @SuppressWarnings("unchecked")
+    Graph(int vertices) {
+        V = vertices;
+        adjList = new LinkedList[V];
+        for (int i = 0; i < V; i++) {
+            adjList[i] = new LinkedList<>();
+        }
+    }
+
+    void addEdge(int v, int w) {
+        adjList[v].add(w);
+    }
+
+    void DFS(int startVertex) {
+        boolean[] visited = new boolean[V];
+        DFSUtil(startVertex, visited);
+    }
+
+    private void DFSUtil(int v, boolean[] visited) {
+        visited[v] = true;
+        System.out.print(v + " ");
+
+        for (int neighbor : adjList[v]) {
+            if (!visited[neighbor]) {
+                DFSUtil(neighbor, visited);
+            }
+        }
+    }
+}
+
+public class DFS {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter the number of vertices: ");
+        int numVertices = scanner.nextInt();
+
+        Graph graph = new Graph(numVertices);
+
+        System.out.print("Enter the number of edges: ");
+        int numEdges = scanner.nextInt();
+
+        for (int i = 0; i < numEdges; i++) {
+            System.out.print("Enter edge " + (i + 1) + " (source destination): ");
+            int source = scanner.nextInt();
+            int destination = scanner.nextInt();
+            graph.addEdge(source, destination);
+        }
+
+        System.out.print("Enter the starting vertex for DFS traversal: ");
+        int startVertex = scanner.nextInt();
+
+        System.out.println("Depth-First Traversal:");
+        graph.DFS(startVertex);
+
+        scanner.close();
+    }
+}
+

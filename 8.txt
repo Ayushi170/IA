@@ -1,0 +1,168 @@
+import java.util.*;
+
+class EightPuzzleState {
+    private final int[][] board;
+    private final int size;
+
+    public EightPuzzleState(int[][] board) {
+        this.board = board;
+        this.size = board.length;
+    }
+
+    public int[][] getBoard() {
+        return board;
+    }
+
+    public boolean isGoalState() {
+        int value = 1;
+
+        for (int[] row : board) {
+            for (int cell : row) {
+                if (cell != 0 && cell != value) {
+                    return false;
+                }
+                value++;
+            }
+        }
+
+        return true;
+    }
+
+    public List<EightPuzzleState> generateSuccessors() {
+        List<EightPuzzleState> successors = new ArrayList<>();
+        int[] zeroLocation = findZeroLocation();
+
+        int[][] moves = {
+                {-1, 0}, // Move Up
+                {1, 0},  // Move Down
+                {0, -1}, // Move Left
+                {0, 1}   // Move Right
+        };
+
+        for (int[] move : moves) {
+            int newX = zeroLocation[0] + move[0];
+            int newY = zeroLocation[1] + move[1];
+
+            if (isValidMove(newX, newY)) {
+                int[][] newBoard = swapTiles(zeroLocation[0], zeroLocation[1], newX, newY);
+                successors.add(new EightPuzzleState(newBoard));
+            }
+        }
+
+        return successors;
+    }
+
+    private int[] findZeroLocation() {
+        int[] location = new int[2];
+
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == 0) {
+                    location[0] = i;
+                    location[1] = j;
+                    return location;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isValidMove(int x, int y) {
+        return x >= 0 && x < size && y >= 0 && y < size;
+    }
+
+    private int[][] swapTiles(int x1, int y1, int x2, int y2) {
+        int[][] newBoard = new int[size][size];
+
+        for (int i = 0; i < size; i++) {
+            System.arraycopy(board[i], 0, newBoard[i], 0, size);
+        }
+
+        int temp = newBoard[x1][y1];
+        newBoard[x1][y1] = newBoard[x2][y2];
+        newBoard[x2][y2] = temp;
+
+        return newBoard;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        EightPuzzleState state = (EightPuzzleState) obj;
+        return Arrays.deepEquals(board, state.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
+    }
+}
+
+public class EightPuzzleSolver {
+
+    public static void main(String[] args) {
+        int[][] initialBoard = {
+                {1, 2, 3},
+                {4, 0, 5},
+                {7, 8, 6}
+        };
+
+        EightPuzzleState initialState = new EightPuzzleState(initialBoard);
+
+        solvePuzzle(initialState);
+    }
+
+    public static void solvePuzzle(EightPuzzleState initialState) {
+        PriorityQueue<EightPuzzleState> openSet = new PriorityQueue<>(Comparator.comparingInt(state -> state.getHeuristic()));
+        Set<EightPuzzleState> closedSet = new HashSet<>();
+
+        openSet.add(initialState);
+
+        while (!openSet.isEmpty()) {
+            EightPuzzleState currentState = openSet.poll();
+
+            if (currentState.isGoalState()) {
+                printSolution(currentState);
+                return;
+            }
+
+            closedSet.add(currentState);
+
+            List<EightPuzzleState> successors = currentState.generateSuccessors();
+
+            for (EightPuzzleState successor : successors) {
+                if (!closedSet.contains(successor) && !openSet.contains(successor)) {
+                    openSet.add(successor);
+                }
+            }
+        }
+
+        System.out.println("No solution found.");
+    }
+
+    public static void printSolution(EightPuzzleState finalState) {
+        List<EightPuzzleState> path = new ArrayList<>();
+
+        while (finalState != null) {
+            path.add(finalState);
+            finalState = finalState.getParent();
+        }
+
+        for (int i = path.size() - 1; i >= 0; i--) {
+            EightPuzzleState state = path.get(i);
+            printBoard(state.getBoard());
+            System.out.println("------");
+        }
+    }
+
+    public static void printBoard(int[][] board) {
+        for (int[] row : board) {
+            for (int cell : row) {
+                System.out.print(cell + " ");
+            }
+            System.out.println();
+        }
+    }
+}
